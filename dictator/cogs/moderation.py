@@ -10,6 +10,40 @@ import re
 import humanize
 
 
+def here_goes_nothing(user_info):
+    embed = discord.Embed(title="Please Work", colour=discord.Colour.dark_purple())
+    embed.add_field(name="Name:", value=f"{user_info}", inline=True)
+    return embed
+
+
+class TestButton(discord.ui.Button):
+    def __init__(
+        self, button_name, member_name
+    ):  # you can pass label here, if you are using a for loop to create bunch buttons
+        super().__init__(
+            style=discord.ButtonStyle.blurple, label=button_name
+        )  # , style, row, or anything that could be found in docs
+        self.button_name = button_name
+        self.member_name = member_name
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            embed=here_goes_nothing(self.member_name)
+        )  # What happens when you click the button. Will need to become function call to send user info embed
+
+
+# Bring it into the view
+class TestView(discord.ui.View):
+    def __init__(self, member_info):
+        super().__init__(
+            timeout=180.0,
+        )  # same thing here
+        for name in member_info:
+            self.add_item(
+                TestButton(f"Info {name[2]}", name[0])
+            )  # This is creating instances of the button based on how many results were returned.
+
+
 class Admin(commands.Cog):
     def __init__(self, dictator: commands.Bot) -> None:
         self.dictator = dictator
@@ -321,7 +355,11 @@ class Admin(commands.Cog):
         if len(users) < history:
             embed.add_field(name="\u200b", value="End of results")
 
-        await interaction.followup.send(embed=embed)
+        view = TestView(
+            users
+        )  # Pass username to this for the label. u[2] is username. It also needs Member to give to the info code (found_user)
+
+        await interaction.followup.send(embed=embed, view=view)
 
     @app_commands.checks.has_role(GAME_MOD_ROLE_ID)
     @app_commands.command()
@@ -345,7 +383,8 @@ class Admin(commands.Cog):
 
         if not result:
             embed = discord.Embed(
-                title=f"No result for the Game Username '{game_username}'", colour=0xFFBB35
+                title=f"No result for the Game Username '{game_username}'",
+                colour=0xFFBB35,
             )
             return await interaction.followup.send(embed=embed)
 
@@ -355,7 +394,7 @@ class Admin(commands.Cog):
         embed = discord.Embed(
             title=f"Result for the Game Username '{game_username}'", colour=0xFFBB35
         )
-        
+
         embed.set_author(name=interaction.user.name, icon_url=interaction.user.avatar)
         embed.add_field(name="User mention:", value=f"{user.mention}", inline=True)
         embed.add_field(name="User name:", value=f"{user.name}", inline=True)
