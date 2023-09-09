@@ -9,11 +9,7 @@ from datetime import datetime, timezone
 import re
 import humanize
 
-
-def here_goes_nothing(user_info):
-    embed = discord.Embed(title="Please Work", colour=discord.Colour.dark_purple())
-    embed.add_field(name="Name:", value=f"{user_info}", inline=True)
-    return embed
+from .informational import Informational
 
 
 class TestButton(discord.ui.Button):
@@ -28,7 +24,7 @@ class TestButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_message(
-            embed=here_goes_nothing(self.member_name)
+            embed=Informational.info_embed(self.member_name)
         )  # What happens when you click the button. Will need to become function call to send user info embed
 
 
@@ -40,7 +36,7 @@ class TestView(discord.ui.View):
         )  # same thing here
         for name in member_info:
             self.add_item(
-                TestButton(f"Info {name[2]}", name[0])
+                TestButton(button_name=f"Info {name[2]}", member_name=name[0])
             )  # This is creating instances of the button based on how many results were returned.
 
 
